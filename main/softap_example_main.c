@@ -5,11 +5,98 @@
 #include <nvs_flash.h>
 #include <esp_netif.h>
 #include <esp_http_server.h>
+#include <driver/gpio.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_timer.h>
+#include <string.h>
+
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
+#define BARCOS 20
+#define TURNOS_INIT 30
+#define EXAMPLE_HTTP_QUERY_KEY_MAX_LEN 1024
+#define INPUT 12
 
+uint32_t actualInput1 = 0;
+volatile uint8_t FLAG = 0;
 static const char *TAG = "web_server";
-const char mi_ssid[] = "mi_esp_ap";
+const char mi_ssid[] = "BATTLESHIP";
+char* caracter;
+uint8_t tablero[10][10] = {0};
+uint8_t puntuacion = 0;
+uint8_t turnos = TURNOS_INIT;
+
+
+void IRAM_ATTR INPUT_ISR(void *args){
+    uint8_t estado=0, estadoBoton = gpio_get_level(INPUT);
+    if(estadoBoton){
+        actualInput1 = esp_timer_get_time();
+    }else{
+        if((esp_timer_get_time() - actualInput1) > 9000){
+                FLAG =1;
+        }
+    }
+}
+ 
+
+ esp_err_t init_ports(){ 
+    gpio_reset_pin(INPUT);
+    gpio_set_direction(INPUT, GPIO_MODE_INPUT);
+    gpio_pullup_dis(INPUT);
+    gpio_pulldown_en(INPUT);
+    gpio_set_intr_type(INPUT, GPIO_INTR_ANYEDGE);
+    gpio_install_isr_service(0);
+    gpio_isr_handler_add(INPUT, INPUT_ISR, NULL);
+    return ESP_OK;
+ }
+
+/*
+ [0,0,0,0,0,0,0,0,0,0]
+ [0,0,0,0,0,0,0,0,0,0]
+ [0,0,0,0,0,0,0,0,0,0]
+ [0,0,0,0,0,0,0,0,0,0]
+ [0,0,0,0,0,0,0,0,0,0]
+ [0,0,0,0,0,0,0,0,0,0]
+ [0,0,0,0,0,0,0,0,0,0]
+ [0,0,0,0,0,0,0,0,0,0]
+ [0,0,0,0,0,0,0,0,0,0]
+ [0,0,0,0,0,0,0,0,0,0]
+
+ 0 = agua
+ 1 = barco
+ 2 = agua / hit
+ 3 = barco / hit
+*/
+
+void init_juego(){
+    uint8_t barcos = BARCOS;
+    while(barcos > 0){
+        uint8_t x = rand() % 10;
+        uint8_t y = rand() % 10;
+        if(tablero[x][y] == 0){
+            tablero[x][y] = 1;
+            barcos--;
+            ESP_LOGI(TAG, "Barco en %d, %d", x, y);
+        }
+    }
+    puntuacion = 0;
+    turnos = TURNOS_INIT;
+    FLAG = 0;
+}
+
+ char imprimirVariables(uint8_t x, uint8_t y){
+    if(tablero[x][y] == 0 || tablero[x][y]==1){
+            caracter= " ";
+            return (*caracter);
+        } else if(tablero[x][y]==2){
+            caracter= "O";
+            return (*caracter);
+        } else {
+            caracter= "X";
+            return (*caracter);
+        }
+ }
 
 void init_spiffs(){
     esp_vfs_spiffs_conf_t conf = {
@@ -41,7 +128,6 @@ void wifi_init_softap(void){
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
     
 
     wifi_config_t wifi_config = {
@@ -63,31 +149,66 @@ void wifi_init_softap(void){
     ESP_LOGI(TAG, "ESP32 AP iniciado con SSID: %s, Password: %s channel: %d", wifi_config.ap.ssid, wifi_config.ap.password, wifi_config.ap.channel);
 }
 
+void imprimir_tablero(httpd_req_t *req){
+    FILE *file = fopen("/spiffs/index.html", "r");
+    char* response = (char*)malloc(sizeof(file));
+        fseek(file, 0, SEEK_END);
+        long file_size = ftell(file);
+        fseek(file, 0, SEEK_SET);
+        char *file_content = (char *)malloc(file_size + 1);
+
+        fread(file_content, 1, file_size, file);
+        file_content[file_size] = '\0'; // Null-terminate the string
+        fclose(file);
+        
+        asprintf(&response, file_content,
+        imprimirVariables(0,0),imprimirVariables(0,1),imprimirVariables(0,2),imprimirVariables(0,3),imprimirVariables(0,4),imprimirVariables(0,5),imprimirVariables(0,6),imprimirVariables(0,7),imprimirVariables(0,8),imprimirVariables(0,9),
+        imprimirVariables(1,0),imprimirVariables(1,1),imprimirVariables(1,2),imprimirVariables(1,3),imprimirVariables(1,4),imprimirVariables(1,5),imprimirVariables(1,6),imprimirVariables(1,7),imprimirVariables(1,8),imprimirVariables(1,9),
+        imprimirVariables(2,0),imprimirVariables(2,1),imprimirVariables(2,2),imprimirVariables(2,3),imprimirVariables(2,4),imprimirVariables(2,5),imprimirVariables(2,6),imprimirVariables(2,7),imprimirVariables(2,8),imprimirVariables(2,9),
+        imprimirVariables(3,0),imprimirVariables(3,1),imprimirVariables(3,2),imprimirVariables(3,3),imprimirVariables(3,4),imprimirVariables(3,5),imprimirVariables(3,6),imprimirVariables(3,7),imprimirVariables(3,8),imprimirVariables(3,9),
+        imprimirVariables(4,0),imprimirVariables(4,1),imprimirVariables(4,2),imprimirVariables(4,3),imprimirVariables(4,4),imprimirVariables(4,5),imprimirVariables(4,6),imprimirVariables(4,7),imprimirVariables(4,8),imprimirVariables(4,9),
+        imprimirVariables(5,0),imprimirVariables(5,1),imprimirVariables(5,2),imprimirVariables(5,3),imprimirVariables(5,4),imprimirVariables(5,5),imprimirVariables(5,6),imprimirVariables(5,7),imprimirVariables(5,8),imprimirVariables(5,9),
+        imprimirVariables(6,0),imprimirVariables(6,1),imprimirVariables(6,2),imprimirVariables(6,3),imprimirVariables(6,4),imprimirVariables(6,5),imprimirVariables(6,6),imprimirVariables(6,7),imprimirVariables(6,8),imprimirVariables(6,9),
+        imprimirVariables(7,0),imprimirVariables(7,1),imprimirVariables(7,2),imprimirVariables(7,3),imprimirVariables(7,4),imprimirVariables(7,5),imprimirVariables(7,6),imprimirVariables(7,7),imprimirVariables(7,8),imprimirVariables(7,9),
+        imprimirVariables(8,0),imprimirVariables(8,1),imprimirVariables(8,2),imprimirVariables(8,3),imprimirVariables(8,4),imprimirVariables(8,5),imprimirVariables(8,6),imprimirVariables(8,7),imprimirVariables(8,8),imprimirVariables(8,9),
+        imprimirVariables(9,0),imprimirVariables(9,1),imprimirVariables(9,2),imprimirVariables(9,3),imprimirVariables(9,4),imprimirVariables(9,5),imprimirVariables(9,6),imprimirVariables(9,7),imprimirVariables(9,8),imprimirVariables(9,9),puntuacion,turnos);
+        httpd_resp_send_chunk(req, response, strlen(response));
+        httpd_resp_send_chunk(req, NULL, 0);
+        free(response);
+}
+
+
+void hit(uint8_t x , uint8_t y ){
+    if(tablero[x][y] == 2 || tablero[x][y] == 3){
+        return;
+    }
+    if(tablero[x][y] == 0){
+        turnos--;
+        tablero[x][y] = 2;
+    }
+    if(tablero[x][y] == 1){
+        puntuacion++;
+        tablero[x][y] = 3;
+    }
+    ESP_LOGI(TAG, "%c", imprimirVariables(x,y));
+    return;
+    //Si el tablero en la posicion x,y es igual a 0 significa que es agua y esto disminuye el contador de turnos y cambia esa posicion a un 2
+    //Si el tablero en la posicion x,y es igual a 1 significa que es un barco y esto aumenta la puntuacion y cambia esa posicion a un 3
+}
+
 esp_err_t html_get_handler(httpd_req_t *req){
-    FILE* file = fopen("/spiffs/index.html", "r");
-    if (file == NULL){
-        ESP_LOGE(TAG, "Error al abrir el archivo index.html");
-        httpd_resp_send_404(req);
-        return ESP_FAIL;
-    }
-    char line[256];
-    while (fgets(line, sizeof(line), file)){
-        httpd_resp_sendstr_chunk(req, line);
-    }
-    httpd_resp_sendstr_chunk(req, NULL);
-    fclose(file);
+    imprimir_tablero(req);
+    
     return ESP_OK;
 }
 
 esp_err_t html_post_handler(httpd_req_t *req){
     char buf[100];
-    FILE* file = fopen("/spiffs/index.html", "r");
-    if (file == NULL){
-        ESP_LOGE(TAG, "Error al abrir el archivo index.html");
+    size_t recv_size = MIN(req->content_len, sizeof(buf));
+    if(recv_size >= 8){
         httpd_resp_send_404(req);
         return ESP_FAIL;
     }
-    size_t recv_size = MIN(req->content_len, sizeof(buf));
     int ret = httpd_req_recv(req, buf, recv_size);
     if (ret <= 0){
         if (ret == HTTPD_SOCK_ERR_TIMEOUT){
@@ -95,13 +216,11 @@ esp_err_t html_post_handler(httpd_req_t *req){
         }
         return ESP_FAIL;
     }
-    ESP_LOGI(TAG, "Datos recibidos: %.*s", ret, buf);
-    char line[256];
-    while (fgets(line, sizeof(line), file)){
-        httpd_resp_sendstr_chunk(req, line);
-    }
-    httpd_resp_sendstr_chunk(req, NULL);
-    fclose(file);
+    char x = buf[2];
+    char y = buf[6];
+    ESP_LOGI(TAG, "Datos recibidos: %c y %c", x, y);
+    hit((uint8_t)x-48, (uint8_t)y-48);
+    imprimir_tablero(req);
     return ESP_OK;
 }
 
@@ -130,11 +249,15 @@ void start_webserver(void){
 }
 
 void app_main(){
+    init_ports();
+    
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
+
+    init_juego();
 
     init_spiffs();
 

@@ -9,10 +9,8 @@
     <form action="" method="POST">
         <label for="X">X:</label>
         <input type="text" id="X" name="X" required>
-
         <label for="Y">Y:</label>
         <input type="text" id="Y" name="Y" required>
-
         <button type="submit">Enviar</button>
     </form>
 
@@ -21,27 +19,39 @@
             <!-- Tabla de 11x11 con identificadores para cada celda -->
             <tr><td id="cell_0_0">X/Y</td> <td id="cell_0_1">0</td> <td id="cell_0_2">1</td> <td id="cell_0_3">2</td> <td id="cell_0_4">3</td>
                 <td id="cell_0_5">4</td> <td id="cell_0_6">5</td> <td id="cell_0_7">6</td> <td id="cell_0_8">7</td> <td id="cell_0_9">8</td> <td id="cell_0_10">9</td></tr>
-            <tr><td id="cell_1_0">0</td> <td id="cell_1_1">%d</td> <td id="cell_1_2">%d</td> <td id="cell_1_3">%d</td> <td id="cell_1_4">%d</td>
-                <td id="cell_1_5">%d</td> <td id="cell_1_6">%d</td> <td id="cell_1_7">%d</td> <td id="cell_1_8">%d</td> <td id="cell_1_9">%d</td> <td id="cell_1_10">%d</td></tr>
-            <tr><td id="cell_2_0">1</td> <td id="cell_2_1">%d</td> <td id="cell_2_2">%d</td> <td id="cell_2_3">%d</td> <td id="cell_2_4">%d</td>
-                <td id="cell_2_5">%d</td> <td id="cell_2_6">%d</td> <td id="cell_2_7">%d</td> <td id="cell_2_8">%d</td> <td id="cell_2_9">%d</td> <td id="cell_2_10">%d</td></tr>
-            <tr><td id="cell_3_0">2</td> <td id="cell_3_1">%d</td> <td id="cell_3_2">%d</td> <td id="cell_3_3">%d</td> <td id="cell_3_4">%d</td>
-                <td id="cell_3_5">%d</td> <td id="cell_3_6">%d</td> <td id="cell_3_7">%d</td> <td id="cell_3_8">%d</td> <td id="cell_3_9">%d</td> <td id="cell_3_10">%d</td></tr>
-            <tr><td id="cell_4_0">3</td> <td id="cell_4_1">%d</td> <td id="cell_4_2">%d</td> <td id="cell_4_3">%d</td> <td id="cell_4_4">%d</td>
-                <td id="cell_4_5">%d</td> <td id="cell_4_6">%d</td> <td id="cell_4_7">%d</td> <td id="cell_4_8">%d</td> <td id="cell_4_9">%d</td> <td id="cell_4_10">%d</td></tr>
-            <tr><td id="cell_5_0">4</td> <td id="cell_5_1">%d</td> <td id="cell_5_2">%d</td> <td id="cell_5_3">%d</td> <td id="cell_5_4">%d</td>
-                <td id="cell_5_5">%d</td> <td id="cell_5_6">%d</td> <td id="cell_5_7">%d</td> <td id="cell_5_8">%d</td> <td id="cell_5_9">%d</td> <td id="cell_5_10">%d</td></tr>
-            <tr><td id="cell_6_0">5</td> <td id="cell_6_1">%d</td> <td id="cell_6_2">%d</td> <td id="cell_6_3">%d</td> <td id="cell_6_4">%d</td>
-                <td id="cell_6_5">%d</td> <td id="cell_6_6">%d</td> <td id="cell_6_7">%d</td> <td id="cell_6_8">%d</td> <td id="cell_6_9">%d</td> <td id="cell_6_10">%d</td></tr>
-            <tr><td id="cell_7_0">6</td> <td id="cell_7_1">%d</td> <td id="cell_7_2">%d</td> <td id="cell_7_3">%d</td> <td id="cell_7_4">%d</td>
-                <td id="cell_7_5">%d</td> <td id="cell_7_6">%d</td> <td id="cell_7_7">%d</td> <td id="cell_7_8">%d</td> <td id="cell_7_9">%d</td> <td id="cell_7_10">%d</td></tr>
-            <tr><td id="cell_8_0">7</td> <td id="cell_8_1">%d</td> <td id="cell_8_2">%d</td> <td id="cell_8_3">%d</td> <td id="cell_8_4">%d</td>
-                <td id="cell_8_5">%d</td> <td id="cell_8_6">%d</td> <td id="cell_8_7">%d</td> <td id="cell_8_8">%d</td> <td id="cell_8_9">%d</td> <td id="cell_8_10">%d</td></tr>
-            <tr><td id="cell_9_0">8</td> <td id="cell_9_1">%d</td> <td id="cell_9_2">%d</td> <td id="cell_9_3">%d</td> <td id="cell_9_4">%d</td>
-                <td id="cell_9_5">%d</td> <td id="cell_9_6">%d</td> <td id="cell_9_7">%d</td> <td id="cell_9_8">%d</td> <td id="cell_9_9">%d</td> <td id="cell_9_10">%d</td></tr>
-            <tr><td id="cell_10_0">9</td> <td id="cell_10_1">%d</td> <td id="cell_10_2">%d</td> <td id="cell_10_3">%d</td> <td id="cell_10_4">%d</td>
-                <td id="cell_10_5">%d</td> <td id="cell_10_6">%d</td> <td id="cell_10_7">%d</td> <td id="cell_10_8">%d</td> <td id="cell_10_9">%d</td> <td id="cell_10_10">%d</td></tr>
+
+            <tr><td id="cell_1_0">0</td> <td id="cell_1_1">%c</td> <td id="cell_1_2">%c</td> <td id="cell_1_3">%c</td> <td id="cell_1_4">%c</td>
+                <td id="cell_1_5">%c</td> <td id="cell_1_6">%c</td> <td id="cell_1_7">%c</td> <td id="cell_1_8">%c</td> <td id="cell_1_9">%c</td> <td id="cell_1_10">%c</td></tr>
+
+            <tr><td id="cell_2_0">1</td> <td id="cell_2_1">%c</td> <td id="cell_2_2">%c</td> <td id="cell_2_3">%c</td> <td id="cell_2_4">%c</td>
+                <td id="cell_2_5">%c</td> <td id="cell_2_6">%c</td> <td id="cell_2_7">%c</td> <td id="cell_2_8">%c</td> <td id="cell_2_9">%c</td> <td id="cell_2_10">%c</td></tr>
+
+            <tr><td id="cell_3_0">2</td> <td id="cell_3_1">%c</td> <td id="cell_3_2">%c</td> <td id="cell_3_3">%c</td> <td id="cell_3_4">%c</td>
+                <td id="cell_3_5">%c</td> <td id="cell_3_6">%c</td> <td id="cell_3_7">%c</td> <td id="cell_3_8">%c</td> <td id="cell_3_9">%c</td> <td id="cell_3_10">%c</td></tr>
+
+            <tr><td id="cell_4_0">3</td> <td id="cell_4_1">%c</td> <td id="cell_4_2">%c</td> <td id="cell_4_3">%c</td> <td id="cell_4_4">%c</td>
+                <td id="cell_4_5">%c</td> <td id="cell_4_6">%c</td> <td id="cell_4_7">%c</td> <td id="cell_4_8">%c</td> <td id="cell_4_9">%c</td> <td id="cell_4_10">%c</td></tr>
+
+            <tr><td id="cell_5_0">4</td> <td id="cell_5_1">%c</td> <td id="cell_5_2">%c</td> <td id="cell_5_3">%c</td> <td id="cell_5_4">%c</td>
+                <td id="cell_5_5">%c</td> <td id="cell_5_6">%c</td> <td id="cell_5_7">%c</td> <td id="cell_5_8">%c</td> <td id="cell_5_9">%c</td> <td id="cell_5_10">%c</td></tr>
+
+            <tr><td id="cell_6_0">5</td> <td id="cell_6_1">%c</td> <td id="cell_6_2">%c</td> <td id="cell_6_3">%c</td> <td id="cell_6_4">%c</td>
+                <td id="cell_6_5">%c</td> <td id="cell_6_6">%c</td> <td id="cell_6_7">%c</td> <td id="cell_6_8">%c</td> <td id="cell_6_9">%c</td> <td id="cell_6_10">%c</td></tr>
+
+            <tr><td id="cell_7_0">6</td> <td id="cell_7_1">%c</td> <td id="cell_7_2">%c</td> <td id="cell_7_3">%c</td> <td id="cell_7_4">%c</td>
+                <td id="cell_7_5">%c</td> <td id="cell_7_6">%c</td> <td id="cell_7_7">%c</td> <td id="cell_7_8">%c</td> <td id="cell_7_9">%c</td> <td id="cell_7_10">%c</td></tr>
+
+            <tr><td id="cell_8_0">7</td> <td id="cell_8_1">%c</td> <td id="cell_8_2">%c</td> <td id="cell_8_3">%c</td> <td id="cell_8_4">%c</td>
+                <td id="cell_8_5">%c</td> <td id="cell_8_6">%c</td> <td id="cell_8_7">%c</td> <td id="cell_8_8">%c</td> <td id="cell_8_9">%c</td> <td id="cell_8_10">%c</td></tr>
+
+            <tr><td id="cell_9_0">8</td> <td id="cell_9_1">%c</td> <td id="cell_9_2">%c</td> <td id="cell_9_3">%c</td> <td id="cell_9_4">%c</td>
+                <td id="cell_9_5">%c</td> <td id="cell_9_6">%c</td> <td id="cell_9_7">%c</td> <td id="cell_9_8">%c</td> <td id="cell_9_9">%c</td> <td id="cell_9_10">%c</td></tr>
+
+            <tr><td id="cell_10_0">9</td> <td id="cell_10_1">%c</td> <td id="cell_10_2">%c</td> <td id="cell_10_3">%c</td> <td id="cell_10_4">%c</td>
+                <td id="cell_10_5">%c</td> <td id="cell_10_6">%c</td> <td id="cell_10_7">%c</td> <td id="cell_10_8">%c</td> <td id="cell_10_9">%c</td> <td id="cell_10_10">%c</td></tr>
         </tbody>
     </table>
+    <p>Puntuación: %d</p>
+    <p>Intentos: %d</p>
 </body>
 </html>
