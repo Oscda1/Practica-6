@@ -17,24 +17,34 @@
 #define TURNOS_INIT 30
 #define EXAMPLE_HTTP_QUERY_KEY_MAX_LEN 1024
 #define INPUT 12
+#define mensaje_inicio "Bienvenido a Battleship"
+#define mensaje_repetido "Ya has disparado en esta posición"
+#define mensaje_finbtn "Fin de la partida por boton"
+#define mensaje_fin_ganaste "Felicidades, has ganado"
+#define mensaje_fin_turnos "Se acabaron los turnos"
+#define mensaje_agua "Agua"
+#define mensaje_barco "Barco"
+
 
 uint32_t actualInput1 = 0;
 volatile uint8_t FLAG = 0;
 static const char *TAG = "web_server";
 const char mi_ssid[] = "BATTLESHIP";
 char* caracter;
+char mensaje[35]={0};
 uint8_t tablero[10][10] = {0};
 uint8_t puntuacion = 0;
 uint8_t turnos = TURNOS_INIT;
+uint8_t estadoJuego = 0;
 
 
 void IRAM_ATTR INPUT_ISR(void *args){
-    uint8_t estado=0, estadoBoton = gpio_get_level(INPUT);
+    uint8_t estadoBoton = gpio_get_level(INPUT);
     if(estadoBoton){
         actualInput1 = esp_timer_get_time();
     }else{
         if((esp_timer_get_time() - actualInput1) > 9000){
-                FLAG =1;
+            FLAG =1;
         }
     }
 }
@@ -50,6 +60,25 @@ void IRAM_ATTR INPUT_ISR(void *args){
     gpio_isr_handler_add(INPUT, INPUT_ISR, NULL);
     return ESP_OK;
  }
+
+char* imprimirMensaje(){
+    if (estadoJuego == 0){
+        return mensaje_inicio;
+    } else if(estadoJuego==1){
+        return mensaje_agua;
+    } else if(estadoJuego==2){
+        return mensaje_barco;
+    } else if(estadoJuego==3){
+        return mensaje_repetido;
+    } else if(estadoJuego==4){
+        return mensaje_finbtn;
+    } else if(estadoJuego==5){
+        return mensaje_fin_ganaste;
+    } else if(estadoJuego==6){
+        return mensaje_fin_turnos;
+    }
+    return mensaje_inicio;
+}
 
 /*
  [0,0,0,0,0,0,0,0,0,0]
@@ -71,6 +100,11 @@ void IRAM_ATTR INPUT_ISR(void *args){
 
 void init_juego(){
     uint8_t barcos = BARCOS;
+    for(uint8_t i = 0; i < 10; i++){
+        for(uint8_t j = 0; j < 10; j++){
+            tablero[i][j] = 0;
+        }
+    }
     while(barcos > 0){
         uint8_t x = rand() % 10;
         uint8_t y = rand() % 10;
@@ -83,6 +117,7 @@ void init_juego(){
     puntuacion = 0;
     turnos = TURNOS_INIT;
     FLAG = 0;
+    mensaje[0] = '\0';
 }
 
  char imprimirVariables(uint8_t x, uint8_t y){
@@ -171,7 +206,8 @@ void imprimir_tablero(httpd_req_t *req){
         imprimirVariables(6,0),imprimirVariables(6,1),imprimirVariables(6,2),imprimirVariables(6,3),imprimirVariables(6,4),imprimirVariables(6,5),imprimirVariables(6,6),imprimirVariables(6,7),imprimirVariables(6,8),imprimirVariables(6,9),
         imprimirVariables(7,0),imprimirVariables(7,1),imprimirVariables(7,2),imprimirVariables(7,3),imprimirVariables(7,4),imprimirVariables(7,5),imprimirVariables(7,6),imprimirVariables(7,7),imprimirVariables(7,8),imprimirVariables(7,9),
         imprimirVariables(8,0),imprimirVariables(8,1),imprimirVariables(8,2),imprimirVariables(8,3),imprimirVariables(8,4),imprimirVariables(8,5),imprimirVariables(8,6),imprimirVariables(8,7),imprimirVariables(8,8),imprimirVariables(8,9),
-        imprimirVariables(9,0),imprimirVariables(9,1),imprimirVariables(9,2),imprimirVariables(9,3),imprimirVariables(9,4),imprimirVariables(9,5),imprimirVariables(9,6),imprimirVariables(9,7),imprimirVariables(9,8),imprimirVariables(9,9),puntuacion,turnos);
+        imprimirVariables(9,0),imprimirVariables(9,1),imprimirVariables(9,2),imprimirVariables(9,3),imprimirVariables(9,4),imprimirVariables(9,5),imprimirVariables(9,6),imprimirVariables(9,7),imprimirVariables(9,8),imprimirVariables(9,9),
+        puntuacion,turnos,imprimirMensaje());
         httpd_resp_send_chunk(req, response, strlen(response));
         httpd_resp_send_chunk(req, NULL, 0);
         free(response);
@@ -180,24 +216,41 @@ void imprimir_tablero(httpd_req_t *req){
 
 void hit(uint8_t x , uint8_t y ){
     if(tablero[x][y] == 2 || tablero[x][y] == 3){
+        estadoJuego = 3;
         return;
     }
     if(tablero[x][y] == 0){
         turnos--;
         tablero[x][y] = 2;
+        estadoJuego = 1;
     }
     if(tablero[x][y] == 1){
         puntuacion++;
         tablero[x][y] = 3;
+        estadoJuego = 2;
     }
     ESP_LOGI(TAG, "%c", imprimirVariables(x,y));
+    if(puntuacion == BARCOS){
+        estadoJuego = 5;
+        return;
+    } else if (turnos == 0){
+        estadoJuego = 6;
+        return;
+    }
     return;
     //Si el tablero en la posicion x,y es igual a 0 significa que es agua y esto disminuye el contador de turnos y cambia esa posicion a un 2
     //Si el tablero en la posicion x,y es igual a 1 significa que es un barco y esto aumenta la puntuacion y cambia esa posicion a un 3
 }
 
 esp_err_t html_get_handler(httpd_req_t *req){
-    imprimir_tablero(req);
+    if(FLAG==0){
+        imprimir_tablero(req);
+    }else{
+        init_juego();
+        estadoJuego=4;
+        imprimir_tablero(req);
+    }
+    
     
     return ESP_OK;
 }
@@ -221,6 +274,10 @@ esp_err_t html_post_handler(httpd_req_t *req){
     ESP_LOGI(TAG, "Datos recibidos: %c y %c", x, y);
     hit((uint8_t)x-48, (uint8_t)y-48);
     imprimir_tablero(req);
+    if((estadoJuego==5)||(estadoJuego==6)){
+        estadoJuego=0;
+        init_juego();
+    }
     return ESP_OK;
 }
 
